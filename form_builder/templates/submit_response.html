@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Response</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #003366;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        button {
+            background-color: #003366;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #002244;
+        }
+
+        .question-container {
+            margin-bottom: 25px;
+        }
+
+        .question-container input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .question-container select {
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Submit Your Response for Form: {{ form.title }}</h1>
+        <form method="POST" action="{% url 'submit_response' form.id %}">
+            {% csrf_token %}
+            {% for question in form.questions.all %}
+                <div class="question-container">
+                    <label>{{ question.question_text }}</label>
+                    {% if question.question_type == 'text' %}
+                        <input type="text" name="answers[{{ question.id }}]" required><br><br>
+                    {% endif %}
+                    {% if question.question_type == 'dropdown' %}
+                        <select name="answers[{{ question.id }}]" required>
+                            {% for option in question.options.all %}
+                                <option value="{{ option.id }}">{{ option.text }}</option>
+                            {% endfor %}
+                        </select><br><br>
+                    {% endif %}
+                    {% if question.question_type == 'checkbox' %}
+                        {% for option in question.options.all %}
+                            <label>
+                                <input type="checkbox" name="answers[{{ question.id }}]" value="{{ option.id }}">
+                                {{ option.text }}
+                            </label><br>
+                        {% endfor %}
+                    {% endif %}
+                    {% if question.question_type == 'ranking' %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit">Submit Response</button>
+        </form>
+    </div>
+</body>
+</html>

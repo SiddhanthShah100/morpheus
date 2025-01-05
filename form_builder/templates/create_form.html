@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Form</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+        }
+
+        .create-form-button {
+            background-color: #003366;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+            display: inline-block;
+            margin-top: 10px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .create-form-button:hover {
+            background-color: #002244;
+        }
+
+        .add-question-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .add-question-button:hover {
+            background-color: #218838;
+        }
+
+        .footer-link {
+            color: #003366;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        .question-container {
+            margin-top: 20px;
+        }
+
+        .question-options div {
+            margin-bottom: 10px;
+        }
+
+        .limit-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .create-form-button, .add-question-button {
+                width: 100%;
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Form</h1>
+        <form method="POST" action="{% url 'create_form' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="title">Form Title:</label>
+                <input type="text" name="title" id="title" class="input-field" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea name="description" id="description" class="input-field" required></textarea>
+            </div>
+
+            <div id="questions">
+                <h2>Questions</h2>
+                <div id="question_container" class="question-container">
+                </div>
+                
+                <button type="button" class="add-question-button" id="addQuestionButton" onclick="addQuestion()">Add Question</button>
+                <p id="limitMessage" class="limit-message" style="display: none;">You cannot add more than 100 questions.</p>
+            </div>
+
+            <button type="submit" class="create-form-button">Create Form</button>
+        </form>
+
+        <footer>
+            <a href="{% url 'view_forms' %}" class="footer-link">Back to Forms</a>
+        </footer>
+    </div>
+
+    <script>
+        let questionCount = 0;
+        const maxQuestions = 100;
+
+        function addQuestion() {
+            if (questionCount >= maxQuestions) {
+                document.getElementById('limitMessage').style.display = 'block';
+                document.getElementById('addQuestionButton').disabled = true;
+                return;
+            }
+
+            questionCount++;
+
+            const questionContainer = document.createElement('div');
+            questionContainer.setAttribute('id', 'question_' + questionCount);
+            questionContainer.innerHTML = `
+                <div class="form-group">
+                    <label for="questions_${questionCount}_text">Question Text:</label>
+                    <input type="text" name="questions[${questionCount}][text]" id="questions_${questionCount}_text" class="input-field" required>
+                </div>
+                <div class="form-group">
+                    <label for="questions_${questionCount}_type">Question Type:</label>
+                    <select name="questions[${questionCount}][type]" id="questions_${questionCount}_type" class="input-field" required>
+                        <option value="text">Text</option>
+                        <option value="dropdown">Dropdown</option>
+                        <option value="file_upload">File Upload</option>
+                        <option value="checkbox">Checkbox</option>
+                        <option value="slider">Slider</option>
+                        <option value="ranking">Ranking</option>
+                        <option value="image_choice">Image Choice</option>
+                    </select>
+                </div>
+                <div class="question-options" id="question_${questionCount}_options">
+                    <!-- Options for dropdown, checkbox, ranking, or image choice will go here -->
+                </div>
+                <button type="button" class="create-form-button" onclick="removeQuestion(${questionCount})">Remove Question</button>
+                <hr>
+            `;
+
+            document.getElementById('question_container').appendChild(questionContainer);
+        }
+
+        function removeQuestion(questionId) {
+            const questionElement = document.getElementById('question_' + questionId);
+            questionElement.remove();
+            questionCount--;
+
+            if (questionCount < maxQuestions) {
+                document.getElementById('limitMessage').style.display = 'none';
+                document.getElementById('addQuestionButton').disabled = false;
+            }
+        }
+
+        document.addEventListener('change', function(event) {
+            if (event.target.id && event.target.id.includes('questions_') && event.target.id.includes('_type')) {
+                const questionId = event.target.id.split('_')[1];
+                const questionType = event.target.value;
+                const optionsContainer = document.getElementById('question_' + questionId + '_options');
+
+                optionsContainer.innerHTML = '';
+
+                if (questionType === 'dropdown' || questionType === 'checkbox' || questionType === 'ranking' || questionType === 'image_choice') {
+                    const optionCount = questionType === 'ranking' ? 1 : 3;
+                    for (let i = 1; i <= optionCount; i++) {
+                        const optionDiv = document.createElement('div');
+                        optionDiv.innerHTML = `
+                            <label for="questions_${questionId}_options_${i}">Option ${i}:</label>
+                            <input type="text" name="questions[${questionId}][options][${i}]" id="questions_${questionId}_options_${i}" class="input-field" required>
+                        `;
+                        optionsContainer.appendChild(optionDiv);
+                    }
+                } else if (questionType === 'slider') {
+                    const minLabel = document.createElement('label');
+                    minLabel.innerHTML = 'Min Value: <input type="number" name="questions[' + questionId + '][min_value]" class="input-field" required>';
+                    optionsContainer.appendChild(minLabel);
+
+                    const maxLabel = document.createElement('label');
+                    maxLabel.innerHTML = 'Max Value: <input type="number" name="questions[' + questionId + '][max_value]" class="input-field" required>';
+                    optionsContainer.appendChild(maxLabel);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

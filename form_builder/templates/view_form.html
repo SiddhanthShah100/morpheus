@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Forms</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>All Forms</h1>
+            <p class="subtitle">View, manage, and analyze your forms.</p>
+        </header>
+
+        <section class="forms-section">
+            <table class="forms-table">
+                <thead>
+                    <tr>
+                        <th>Form Title</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in forms %}
+                    <tr>
+                        <td>{{ form.title }}</td>
+                        <td>{{ form.description }}</td>
+                        <td>
+                            <a href="{% url 'view_responses' form.id %}" class="action-link">View Responses</a> | 
+                            <a href="{% url 'view_analytics' form.id %}" class="action-link">View Analytics</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <footer class="footer">
+            <a href="{% url 'create_form' %}" class="create-form-button">Create New Form</a>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Responses</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #003366;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #003366;
+            color: white;
+            font-size: 16px;
+        }
+
+        td {
+            background-color: #fff;
+            color: #333;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover td {
+            background-color: #f1f1f1;
+        }
+
+        p {
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        .no-responses {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+
+        @media (max-width: 768px) {
+            table, th, td {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Responses for: {{ form.title }}</h1>
+
+    {% if responses %}
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    {% for question in form.questions.all %}
+                        <th>{{ question.question_text }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in responses %}
+                    <tr>
+                        <td>{{ response.user }}</td>
+                        {% for question in form.questions.all %}
+                            <td>
+                                {% with response.answers.all as answers %}
+                                    {% for answer in answers %}
+                                        {% if answer.question == question %}
+                                            {{ answer.get_answer }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-responses">No responses available for this form.</p>
+    {% endif %}
+</body>
+</html>

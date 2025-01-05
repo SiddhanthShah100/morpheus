@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submission</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        body {
+            background-color: #f4f7fc;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #003366;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        input[type="text"], select, input[type="file"], input[type="range"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"], input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .checkbox-container, .radio-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .checkbox-container input, .radio-container input {
+            margin: 5px 0;
+        }
+
+        button[type="submit"] {
+            background-color: #003366;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #002244;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group img {
+            width: 100px;
+            height: 100px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Submit Your Response</h1>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% for question in questions %}
+                <div class="question">
+                    <label>{{ question.question_text }}</label>
+                    
+                    {% if question.question_type == 'text' %}
+                        <input type="text" name="question_{{ question.id }}_text" required>
+                    
+                    {% elif question.question_type == 'dropdown' %}
+                        <select name="question_{{ question.id }}_text" required>
+                            {% for option in question.options.all() %}
+                                <option value="{{ option.id }}">{{ option.text }}</option>
+                            {% endfor %}
+                        </select>
+                    
+                    {% elif question.question_type == 'checkbox' %}
+                        <div class="checkbox-container">
+                            {% for option in question.options.all() %}
+                                <label>
+                                    <input type="checkbox" name="question_{{ question.id }}_text" value="{{ option.id }}">
+                                    {{ option.text }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    
+                    {% elif question.question_type == 'image_choice' %}
+                        <div class="radio-container">
+                            {% for option in question.options.all() %}
+                                <label>
+                                    <input type="radio" name="question_{{ question.id }}_image" value="{{ option.id }}">
+                                    <img src="{{ option.image.url }}" alt="{{ option.text }}">
+                                </label>
+                            {% endfor %}
+                        </div>
+                    
+                    {% elif question.question_type == 'file_upload' %}
+                        <input type="file" name="question_{{ question.id }}_file" required>
+                    
+                    {% elif question.question_type == 'slider' %}
+                        <input type="range" name="question_{{ question.id }}_slider" min="{{ question.min_value }}" max="{{ question.max_value }}" required>
+                    
+                    {% elif question.question_type == 'ranking' %}
+                        <input type="number" name="question_{{ question.id }}_ranking" min="1" max="5" required>
+                    
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
